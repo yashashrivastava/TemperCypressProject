@@ -1,56 +1,58 @@
 /// <reference types="cypress"/>
+import LoginPage from "../PageObjects/LoginPage";
 
 describe('LoginTest Suite', () => 
 {
+  const loginPage = new LoginPage();
 
-    it('SuccessfulLogin_StandardUser', () => 
-        {
-           cy.visit("https://www.saucedemo.com/")
-           cy.title().should('eq','Swag Labs')
-            cy.get("#user-name").type("problem_user")
-            cy.get("#password").type("secret_sauce")
-            cy.get("#login-button").click()
-            // cy.get('#item_4_img_link > .inventory_item_img')
-            cy.get("#item_4_img_link > .inventory_item_img").should('be.visible') //Assertion
-            cy.get("#item_4_img_link > .inventory_item_img").should('have.attr', 'src', '/static/media/sauce-backpack-1200x1500.34e7aa42.jpg') //Assertion
-            //cy.get(#item_4_img_link > .inventory_item_img').contains('src','/static/media/sauce-backpack-1200x1500.34e7aa42.jpg') //Assertion
-            //cy.get('#item_4_img_link > .inventory_item_img').children('[alt="Sauce Labs Backpack"]').should('be.visible')
-            // cy.get('#item_4_img_link > .inventory_item_img').children('img.inventory_item_img[alt=“Sauce Labs Backpack”]').should('be.visible')
-         })
+  beforeEach(function(){
+    loginPage.openURL()
+  })
 
-    // it('loginTest2', () => 
-    //     {
-    //        expect(true).to.equal(true)
-    //     })
-
-    // it('loginTest3', () => 
-    //     {
-    //         expect(true).to.equal(true)
-    //     })
-
-    // it('loginTest4', () => 
-    //     {
-    //       expect(true).to.equal(true)
-    //     })
+    it('TC01_Verify Successful Login For Standard User', () => 
+         {
+            loginPage.setUserName("standard_user")
+            loginPage.setPassword("secret_sauce")
+            loginPage.clickLogin()
+            loginPage.verifyLogin()
+            loginPage.logOut()
+          })
 
 
-    //   it('loginTest5', () => 
-    //   {
-    //     expect(true).to.equal(true)
-    //   })
+    it('TC02_Verify that Locked Out User throws an error while trying to login', () => 
+         {
+            loginPage.setUserName("locked_out_user")
+            loginPage.setPassword("secret_sauce")
+            loginPage.clickLogin()
+            cy.get('[data-test="error"]').should('be.visible')
+            cy.get('svg[class="svg-inline--fa fa-times fa-w-11 "]').click()
+            cy.get("#user-name").clear()
+            cy.get("#password").clear()
+          })
+
+
+    it('TC03_Verify that Problem User does not show expected image after login', () => 
+          {
+             loginPage.setUserName("problem_user")
+             loginPage.setPassword("secret_sauce")
+             loginPage.clickLogin()
+             cy.get("#item_4_img_link > .inventory_item_img").should('be.visible')
+             cy.get("#item_4_img_link > .inventory_item_img").should('not.have.attr', 'src', '/static/media/sauce-backpack-1200x1500.34e7aa42.jpg')
+             loginPage.logOut()
+           })
+
+
+    it('TC04_Verify that Performance Glitch User has performance issue and has to wait for some time after trying to login', () => 
+           {
+             loginPage.setUserName("performance_glitch_user")
+             loginPage.setPassword("secret_sauce")
+             loginPage.clickLogin()
+             cy.wait(5000)
+             loginPage.verifyLogin()
+             cy.wait(5000)
+             loginPage.logOut()
+             cy.wait(5000)
+            })
 
   }
   )
-
-
-
-//   describe('Another Suite', function()
-//   {
-//     it('loginTest6', function()
-//         {
-//          expect(true).to.equal(true)
-//         }
-//     )
-
-//   }
-//   )
